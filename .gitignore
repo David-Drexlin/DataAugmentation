@@ -1,0 +1,12 @@
+/wandb/*
+/Old/*
+/model_checkpoints/*
+/__pycache__/*
+/utils/__pycache__/*
+/lightning_logs/*
+/utils/RandStainNA/*
+/LRP/*
+/data/*
+*.sif
+*.def
+.DS_Store

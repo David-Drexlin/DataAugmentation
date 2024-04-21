@@ -1,0 +1,25 @@
+base_lr: 0.1
+batch_size: 512
+learning_rate: 0
+LARS: True
+cosine_decay_lr_momentum: True
+min_lr: 0.0001
+num_epochs: 20
+weight_decay: 0.0001
+momentum_start: 0.9
+warmup_epochs: 10
+model: resnet18
+augmentation: ColorAugmentation
+use_wandb: True
+pretrained: False
+checkpoint_path: 
+num_classes: 9
+loss: cross_entropy
+mode: SL
+dataset: CRC-NoNorm
+lambda: 0.005
+accumulation_steps: 1
+kind: image_net
+seed: 42
+augmentation_val: 
+augmentation_test: ColorAugmentation 
