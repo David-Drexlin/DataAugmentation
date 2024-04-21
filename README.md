@@ -28,5 +28,6 @@ Augmentations Available (Code inside ./utils/augmentations.py):
  Losses Available: 
  - "binary_cross_entropy_with_logits"
  - "binary_cross_entropy"
+ - "cross_entropy"
 
  Changed Torchmetrics.BinaryAccuarcy _safedivide to cpu!!
