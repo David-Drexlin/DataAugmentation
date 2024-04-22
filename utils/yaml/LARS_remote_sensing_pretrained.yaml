@@ -21,3 +21,5 @@ lambda: 0.005
 accumulation_steps: 2
 kind: RMS
 seed: 42
+augmentation_val: 
+augmentation_test: 
