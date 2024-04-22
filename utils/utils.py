@@ -1,32 +1,57 @@
-import yaml 
-import torchvision.models as models
-import torch.nn as nn
+import os
+import yaml
 import pickle
 import numpy as np
-import os
-import timm
 import torch
+import timm
+import torch.nn as nn
+import torchvision.models as models
+import matplotlib.pyplot as plt
 from torchvision.utils import save_image
 from torchgeo.models import ResNet18_Weights
 from zennit.composites import EpsilonGammaBox
 from zennit.canonizers import SequentialMergeBatchNorm
-from zennit.attribution import Gradient, SmoothGrad, IntegratedGradients, Occlusion
-import matplotlib.pyplot as plt
+from zennit.attribution import Gradient
 
 def load_yaml(filename):
-    yaml_file_path = './utils/yaml/'+filename
+    yaml_file_path = './utils/yaml/'+filename 
     with open(yaml_file_path, 'r') as file:
         hyperparameters = yaml.safe_load(file)
     return hyperparameters
 
 def load_model(model_name, num_classes, pretrained=False, kind="image_net"):
+    """
+    Loads a specified machine learning model with the option to initialize with pretrained weights.
+    This function supports various models including ResNet and Vision Transformers, and allows for 
+    custom pretrained weight initialization depending on the model and specified `kind`.
+
+    Parameters:
+    - model_name (str): The name of the model to load. Supported models include 'resnet18', 'resnet34', 
+                        'resnet50', and 'vit_small_patch16_224'.
+    - num_classes (int): The number of output classes for the model. This modifies the final layer 
+                         to match the specified number of classes.
+    - pretrained (bool): If True, initializes the model with pretrained weights according to the `kind` parameter.
+                         If False, the model will initialize weights randomly.
+    - kind (str): A string that specifies the type of pretrained weights to use. Options include 'image_net' 
+                  for ImageNet pretrained weights, and 'RMS' for remote sensing data pretrained weights. 
+                  Default is 'image_net'.
+
+    Returns:
+    - model: The loaded model with weights initialized as specified, and adjusted to the correct number of output classes.
+
+    Raises:
+    - ValueError: If the specified model_name is not recognized or supported.
+
+    The function is designed to be flexible to accommodate different types of pretrained weights and model architectures,
+    making it suitable for a variety of machine learning tasks.
+    """
 
     model_mapping = {
         "resnet18": models.resnet18,
         "resnet34": models.resnet34,
         "resnet50": models.resnet50,
         "vit_small_patch16_224": "vit_small_patch16_224",
-        # Add other models as needed
+        # Add other models
     }
 
     model_weight_mapping = {
@@ -36,7 +61,7 @@ def load_model(model_name, num_classes, pretrained=False, kind="image_net"):
         "vit_small_patch16_224": False,  # Update as needed
     }
 
-    if pretrained:
+    if pretrained: # if false random weight initalization, otherwise update the None values
         if kind == "image_net":
             model_weight_mapping.update({
                 "resnet18": models.ResNet18_Weights.IMAGENET1K_V1,
@@ -44,10 +69,12 @@ def load_model(model_name, num_classes, pretrained=False, kind="image_net"):
                 "resnet50": models.ResNet50_Weights.IMAGENET1K_V1,
                 "vit_small_patch16_224": True,
             })
+            # RMS = remote sensing pretrained weights
         elif kind == "RMS":
             model_weight_mapping.update({
                 "resnet18": ResNet18_Weights.SENTINEL2_RGB_MOCO,  # Update this appropriately
             })
+
     model_constructor = model_mapping.get(model_name)
     weights = model_weight_mapping.get(model_name)
 
@@ -71,6 +98,8 @@ def load_model(model_name, num_classes, pretrained=False, kind="image_net"):
 
 
 def load_path(dataset_type):
+    # loads the h5 paths to model.py if used h5 is used as data-source
+
     if dataset_type == 'crc':
         # CRC dataset path
         train_data_file = '/home/daviddrexlin/Master/data/crc/train_crc_images.h5'
@@ -184,6 +213,9 @@ class LARS(torch.optim.Optimizer):
     #return loss
 
 def LRP(model, pkl_path, save_dir):
+    ## Given a list of images paths in a Pickle file, LRP is applied to
+    ## the images contained in the pickle, currently not (yet) used
+
     model.eval()
 
     # Load prediction differences

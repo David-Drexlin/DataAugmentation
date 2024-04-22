@@ -115,9 +115,19 @@ class LitDataModule(pl.LightningDataModule):
         self.dataset = hyperparameters['dataset']
         
         if self.dataset == "crc": 
+            # handling for h5 file configuration
             self.transform = load_augmentations(hyperparameters["augmentation"], True)
             self.val_transform = load_augmentations(hyperparameters["augmentation_val"], True)
             self.test_transform = load_augmentations(hyperparameters["augmentation_test"], True)
+            
+            paths = load_path(hyperparameters["dataset"])
+            self.train_x_path = paths["train_data_file"]
+            self.train_y_path = paths["train_label_file"]
+            self.val_x_path = paths["valid_data_file"]
+            self.val_y_path = paths["valid_label_file"]
+            self.test_x_path = paths["test_data_file"]
+            self.test_y_path = paths["test_label_file"]
+
         else: 
             self.transform = load_augmentations(hyperparameters["augmentation"])
             self.val_transform = load_augmentations(hyperparameters["augmentation_val"])
@@ -125,16 +135,7 @@ class LitDataModule(pl.LightningDataModule):
 
         self.dataset = hyperparameters["dataset"]
         self.batch_size = hyperparameters['batch_size']
-        
-        paths = load_path(hyperparameters["dataset"])
-        self.train_x_path = paths["train_data_file"]
-        self.train_y_path = paths["train_label_file"]
-        self.val_x_path = paths["valid_data_file"]
-        self.val_y_path = paths["valid_label_file"]
-        self.test_x_path = paths["test_data_file"]
-        self.test_y_path = paths["test_label_file"]
-
-
+    
     def setup(self, stage=None):
         if self.dataset == "CRC-NoNorm": 
             self.C16_train = torchvision.datasets.ImageFolder('./data/CRC/NCT-CRC-HE-100K-NONORM', self.transform)
@@ -157,8 +158,8 @@ class LitDataModule(pl.LightningDataModule):
             y =  HDF5Dataset_Labels(self.test_y_path) 
             self.C16_test = MergedDataset(x,y)
 
-            def test_dataloader(self):
-                return DataLoader(self.C16_test, batch_size=self.batch_size, shuffle=False, num_workers=4)
+    def test_dataloader(self):
+        return DataLoader(self.C16_test, batch_size=self.batch_size, shuffle=False, num_workers=4)
 
     def train_dataloader(self):
         return DataLoader(self.C16_train, batch_size=self.batch_size, shuffle=True, num_workers=4, persistent_workers=True)
